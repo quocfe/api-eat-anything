@@ -1,0 +1,88 @@
+{% extends 'layouts/base.html' %}
+
+{% block title %} Dashboard {% endblock title %}
+
+{% block stylesheets %}{% endblock stylesheets %}
+
+{% block content %}
+
+
+<div class="container mt-5">
+    <h3>Add Items to Project: {{ project.name }}</h3>
+
+
+
+    <form action="{{ url_for('projectItem_blueprint.add_items', project_id=project.id) }}" method="POST"
+        enctype="multipart/form-data" id="addItemsForm">
+        <div id="itemsContainer">
+        </div>
+        <button  type="button" class="btn btn-sm btn-success mb-3" id="addMoreBtn">+ Add More Item</button>
+        <br>
+        <button type="submit" class="btn btn-primary">Save Items</button>
+    </form>
+</div>
+{% endblock content %}
+
+{% block javascripts %}
+<script>
+    let itemIndex = 0;
+
+    function createItemForm(index) {
+        return `
+    <div class="border rounded p-3 mb-3 item-block">
+        <div class="form-group">
+            <label>Image</label>
+            <input type="file" name="items[${index}][image]" class="form-control-file image-input" required>
+            <img src="#" class="img-thumbnail mt-2 img-preview" style="width: 200px; display: none;" />
+        </div>
+        <div class="form-group">
+            <label>Description</label>
+            <textarea name="items[${index}][description]" class="form-control" required></textarea>
+        </div>
+        <button type="button" class="btn btn-sm btn-danger remove-item-btn">Remove</button>
+    </div>`;
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+        const container = document.getElementById('itemsContainer');
+        const addBtn = document.getElementById('addMoreBtn');
+
+        function addItem() {
+            container.insertAdjacentHTML('beforeend', createItemForm(itemIndex++));
+        }
+
+        addBtn.addEventListener('click', addItem);
+        container.addEventListener('click', function (e) {
+            if (e.target.classList.contains('remove-item-btn')) {
+                e.target.closest('.item-block').remove();
+            }
+        });
+
+        // Add the first item block by default
+        addItem();
+
+        function handleImagePreview(input) {
+            const file = input.files[0];
+            const preview = input.closest('.form-group').querySelector('.img-preview');
+
+            if (file && preview) {
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    preview.src = e.target.result;
+                    preview.style.display = 'block';
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        document.addEventListener('change', function (e) {
+            if (e.target.classList.contains('image-input')) {
+                handleImagePreview(e.target);
+            }
+        });
+    });
+
+
+
+</script>
+{% endblock javascripts %}
